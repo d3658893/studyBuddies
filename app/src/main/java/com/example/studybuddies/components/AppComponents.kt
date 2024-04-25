@@ -128,38 +128,36 @@ fun HeadingTextComponent(value: String) {
         text = value,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(),
+            .heightIn()
+            .background(Purple40),
         style = TextStyle(
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Normal
-        ), color = Purple40,
+        ), color = WhiteColor,
         textAlign = TextAlign.Center
     )
 }
-
 @Composable
 fun MyTextFieldComponent(
-    labelValue: String, painterResource: Painter,
+    labelValue: String,
+    painterResource: Painter,
+    initialValue: String,
     onTextChanged: (String) -> Unit,
     errorStatus: Boolean = false
 ) {
-
-    val textValue = remember {
-        mutableStateOf("")
-    }
-    val localFocusManager = LocalFocusManager.current
+    val textValue = remember { mutableStateOf(initialValue) }
 
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BgColor)
-            .clip(componentShapes.small),
+            .background(Color.White) // Background color
+            .clip(RoundedCornerShape(8.dp)), // Rounded corners
         label = { Text(text = labelValue) },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Purple40,
-            focusedLabelColor = Purple40,
-            cursorColor = Purple40,
+            focusedBorderColor = Purple40, // Border color when focused
+            focusedLabelColor = Purple40, // Label color when focused
+            cursorColor = Purple40 // Cursor color
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = true,
@@ -172,21 +170,60 @@ fun MyTextFieldComponent(
         leadingIcon = {
             Icon(painter = painterResource, contentDescription = "")
         },
-        isError = !errorStatus
+        isError = !errorStatus // Invert error status to match OutlinedTextField
     )
 }
+//@Composable
+//fun MyTextFieldComponent(
+//    labelValue: String, painterResource: Painter,
+//    onTextChanged: (String) -> Unit,
+//
+//    errorStatus: Boolean = false
+//){
+//
+//    val textValue = remember {
+//        mutableStateOf("")
+//    }
+//    val localFocusManager = LocalFocusManager.current
+//
+//    OutlinedTextField(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .background(BgColor)
+//            .clip(componentShapes.small),
+//        label = { Text(text = labelValue) },
+//        colors = OutlinedTextFieldDefaults.colors(
+//            focusedBorderColor = Purple40,
+//            focusedLabelColor = Purple40,
+//            cursorColor = Purple40,
+//        ),
+//        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+//        singleLine = true,
+//        maxLines = 1,
+//        value = textValue.value,
+//        onValueChange = {
+//            textValue.value = it
+//            onTextChanged(it)
+//        },
+//        leadingIcon = {
+//            Icon(painter = painterResource, contentDescription = "")
+//        },
+//        isError = !errorStatus
+//    )
+//}
 @Composable
 fun MyTextAreaFieldComponent(
     labelValue: String, painterResource: Painter,
+    initialValue: String,
     onTextChanged: (String) -> Unit,
     errorStatus: Boolean = false
-) {
+){
 
     val textValue = remember {
-        mutableStateOf("")
+        mutableStateOf(initialValue)
     }
     val localFocusManager = LocalFocusManager.current
-    val text = rememberSaveable { mutableStateOf("") }
+//    val text = rememberSaveable { mutableStateOf("") }
 
     OutlinedTextField(
         modifier = Modifier
@@ -204,9 +241,9 @@ fun MyTextAreaFieldComponent(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
 //        singleLine = true,
 //        maxLines = 1,
-        value = text.value,
+        value = textValue.value,
         onValueChange = {
-            text.value = it
+            textValue.value = it
             onTextChanged(it)
         },
 //        trailingIcon = {
@@ -382,14 +419,14 @@ fun LeftAlignButtonComponent(value: String, onButtonClicked: () -> Unit) {
 
     Button(
         modifier = Modifier
-            .width(90.dp)
+            .width(140.dp)
             .heightIn(48.dp),
         onClick = {
             onButtonClicked.invoke()
         },
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(Color.Transparent),
-        shape = RoundedCornerShape(50.dp),
+//        shape = RoundedCornerShape(50.dp),
         enabled = true
     ){
         Box(
@@ -398,8 +435,8 @@ fun LeftAlignButtonComponent(value: String, onButtonClicked: () -> Unit) {
                 .heightIn(38.dp)
 //                .align(Alignment.End)
                 .background(
-                    brush = Brush.horizontalGradient(listOf(Color.Blue, Purple40)),
-                    shape = RoundedCornerShape(50.dp)
+                    brush = Brush.horizontalGradient(listOf(Purple40, Purple40)),
+//                    shape = RoundedCornerShape(50.dp)
                 ),
             contentAlignment = Alignment.Center
         ){
@@ -413,7 +450,6 @@ fun LeftAlignButtonComponent(value: String, onButtonClicked: () -> Unit) {
         }
     }
 }
-
 @Composable
 fun DividerTextComponent() {
     Row(
@@ -444,7 +480,6 @@ fun DividerTextComponent() {
         )
     }
 }
-
 @Composable
 fun ClickableLoginTextComponent(tryingToLogin: Boolean = true, onTextSelected: (String) -> Unit) {
     val initialText =
@@ -484,7 +519,6 @@ fun ClickableLoginTextComponent(tryingToLogin: Boolean = true, onTextSelected: (
         },
     )
 }
-
 @Composable
 fun UnderLinedTextComponent(value: String) {
     Text(
@@ -589,25 +623,29 @@ fun UniversityDDComponent(itemList: List<String>, selectedIndex: Int, modifier: 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExposedDropdownMenuBoxComponent(itemList: List<String>, label:String,
-                                    onTextChanged: (String) -> Unit,) {
+fun ExposedDropdownMenuBoxComponent(
+    itemList: List<String>, label:String,
+    initialValue: String,
+    onTextChanged: (String) -> Unit,) {
     val context = LocalContext.current
 //    val coffeeDrinks = arrayOf("Americano", "Cappuccino", "Espresso", "Latte", "Mocha")
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(itemList[0]) }
-
+    val selectedText = remember { mutableStateOf(initialValue) }
 
         ExposedDropdownMenuBox(
-            expanded = expanded,
             onExpandedChange = {
+//                if(disable)expanded=false else expanded=true
                 expanded = !expanded
-            }
-        ) {
+            },
+            expanded = expanded
+
+            ) {
             TextField(
                 label = {Text(text = label)},
-                value = selectedText,
+                value = selectedText.value,
                 onValueChange = {},
                 readOnly = true,
+                enabled = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
                     .menuAnchor()
@@ -618,20 +656,23 @@ fun ExposedDropdownMenuBoxComponent(itemList: List<String>, label:String,
                     focusedBorderColor = Purple40,
                     focusedLabelColor = Purple40,
                     cursorColor = Purple40,
-                )
-            )
+                ),
+//                onClick = {
+//                    if(disable!=false)expanded=false else expanded=true
+//                }
 
+            )
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false}
             ) {
                 itemList.forEach { item ->
                     DropdownMenuItem(
                         text = { Text(text = item) },
                         onClick = {
-                            selectedText = item
+                            selectedText.value = item
                             onTextChanged(item)
-                            expanded = false
+//                            expanded = false
                             Toast.makeText(context, item, Toast.LENGTH_SHORT).show()
                         }
                     )

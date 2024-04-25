@@ -50,19 +50,6 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                     Log.d("ComingHere","${it.itemId} ${it.title}")
                     val selectedItemId = it.itemId
                     StudyBuddiesAppRouter.navigateTo(it.itemId)
-                    // Usage
-//                    val screen = try {
-//                        val clazz = Class.forName("com.example.studybuddies.Screen\$${selectedItemId}")
-//                        clazz.kotlin.objectInstance as Screen
-//                    } catch (e: ClassNotFoundException) {
-//                        null
-//                    }
-//                    Log.d("screen", it.toString())
-//                    screen?.let { StudyBuddiesAppRouter.navigateTo(it) }
-//                    Log.d("ComingHere","inside_NavigationItemClicked")
-//                    Log.d("ComingHere","${it.itemId} ${it.title}")
-//                    StudyBuddiesAppRouter.navigateTo(SelectedItemId)
-
                 })
         }
     }){

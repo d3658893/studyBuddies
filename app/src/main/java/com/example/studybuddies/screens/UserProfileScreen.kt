@@ -1,6 +1,5 @@
 
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,48 +36,50 @@ import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.example.studybuddies.navigation.SystemBackButtonHandler
 
-//@RequiresApi(Build.VERSION_CODES.O)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
-    val userProfileUIState = profileViewModel.profileUIState.value
+    var userProfileUIState = profileViewModel.profileUIState.value
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile(userProfileUIState)
+    }
     val profileUpdateInProgress = profileViewModel.profileUpdateInProgress
-    profileViewModel.loadProfile()
-    var isComponentVisible by remember { mutableStateOf(true) }
+    var isComponentVisible by remember { mutableStateOf(false) }
     var isEnabled by remember { mutableStateOf(true) }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(28.dp)
+    if(!profileViewModel.setModelInProgress) {
+        Box(
+            modifier = Modifier.fillMaxSize().background(Color.White),
+            contentAlignment = Alignment.Center
         ) {
 
-            Column(
+            Surface(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(Color.White)
+                    .padding(28.dp)
             ) {
-                HeadingTextComponent(value = stringResource(id = string.user_profile))
-//                NormalTextComponent(value = stringResource(id = string.study_buddies))
-                Spacer(modifier = Modifier.height(30.dp))
-                // Personal Information Section
-                // first name Field
-                LeftAlignButtonComponent(
-                    value = stringResource( id = string.edit),
-                    onButtonClicked = {
-                        isComponentVisible = !isComponentVisible
-                        isEnabled = !isEnabled
-                    }
-                )
 
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    HeadingTextComponent(value = stringResource(id = string.user_profile))
+//                NormalTextComponent(value = stringResource(id = string.study_buddies))
+                    Spacer(modifier = Modifier.height(30.dp))
+                    // Edit Button
+                    LeftAlignButtonComponent(
+                        value = stringResource(id = string.edit),
+                        onButtonClicked = {
+                            isComponentVisible = !isComponentVisible
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(30.dp))
+                    // Personal Information Section
+                    // first name Field
                     MyTextFieldComponent(
                         labelValue = stringResource(id = string.first_name),
                         painterResource = painterResource(id = drawable.profile),
+                        initialValue = userProfileUIState.firstName,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.FirstNameChanged(it))
@@ -90,6 +92,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     MyTextFieldComponent(
                         labelValue = stringResource(id = string.last_name),
                         painterResource = painterResource(id = drawable.profile),
+                        initialValue = userProfileUIState.lastName,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.LastNameChanged(it))
@@ -101,6 +104,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     MyTextFieldComponent(
                         labelValue = stringResource(id = string.phone),
                         painterResource = painterResource(id = drawable.password),
+                        initialValue = userProfileUIState.phone,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.PhoneChanged(it))
@@ -112,6 +116,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     MyTextFieldComponent(
                         labelValue = stringResource(id = string.email),
                         painterResource = painterResource(id = drawable.message),
+                        initialValue = userProfileUIState.email,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.EmailChanged(it))
@@ -123,6 +128,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     MyTextAreaFieldComponent(
                         labelValue = stringResource(id = string.bio),
                         painterResource = painterResource(id = drawable.profile),
+                        initialValue = userProfileUIState.bio,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.BioChanged(it))
@@ -132,6 +138,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(20.dp))
                     ExposedDropdownMenuBoxComponent(itemList = profileViewModel.universitiesItemList,
                         label = stringResource(id = string.universities),
+                        initialValue = userProfileUIState.university,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.UniversityChanged(it))
@@ -139,21 +146,23 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(20.dp))
                     ExposedDropdownMenuBoxComponent(itemList = profileViewModel.coursesItemList,
                         label = stringResource(id = string.courses),
+                        initialValue = userProfileUIState.course,
                         onTextChanged =
                         {
                             profileViewModel.onEvent(ProfileUIEvent.CourseChanged(it))
                         })
                     Spacer(modifier = Modifier.height(40.dp))
 
-                if (isComponentVisible) {
-                ButtonComponent(
-                    value = stringResource(id = string.save),
-                    onButtonClicked = {
-                        profileViewModel.onEvent(ProfileUIEvent.SaveButtonClicked)
-                    },
-                    isEnabled = profileViewModel.allValidationsPassed.value
-                )
-            }
+                    if (isComponentVisible) {
+                        ButtonComponent(
+                            value = stringResource(id = string.save),
+                            onButtonClicked = {
+                                profileViewModel.onEvent(ProfileUIEvent.SaveButtonClicked)
+                            },
+                            isEnabled = profileViewModel.allValidationsPassed.value
+                        )
+                    }
+                }
             }
         }
     }
@@ -163,7 +172,6 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun DefaultPreview(){

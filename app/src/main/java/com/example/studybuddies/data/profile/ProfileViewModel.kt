@@ -1,6 +1,8 @@
 package com.example.studybuddies.data.profile
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.studybuddies.data.rules.ProfileValidator
@@ -30,6 +32,17 @@ class UserProfileViewModel : ViewModel() {
         "Masters in Cyber Security",
         "Masters in IT"
     )
+    var setModelInProgress by mutableStateOf(false)
+    var checkboxChecked by mutableStateOf(false)
+    var isSuccessful : Boolean = false
+
+    fun initializeFields() {
+        // Perform initialization logic here
+        // For example:
+//        loadProfile()
+//        textFieldValuee = "Updated Text"
+//        checkboxChecked = true
+    }
 
     fun onEvent(event: ProfileUIEvent) {
         when (event) {
@@ -72,7 +85,6 @@ class UserProfileViewModel : ViewModel() {
             is ProfileUIEvent.PhoneChanged -> {
                 profileUIState.value = profileUIState.value.copy(phone = event.phone)
             }
-
         }
         validateLoginUIDataWithRules()
 
@@ -89,29 +101,42 @@ class UserProfileViewModel : ViewModel() {
         }
     }
 
-
     private val emailId: MutableLiveData<String> = MutableLiveData()
 
-    fun getUserData() {
+    private fun getUserData() {
         FirebaseAuth.getInstance().currentUser?.also {
             it.email?.also { email ->
                 emailId.value = email
             }
         }
     }
-    fun loadProfile(){
+    fun loadProfile(userProfileUIState:ProfileUIState) {
         getUserData()
         val usersCollection = db.collection("users")
         val query = usersCollection.whereEqualTo("email", emailId.value)
+        setModelInProgress = true
 
         query
             .get()
             .addOnSuccessListener { result ->
-//                Log.d(TAG, "$document")
 
                 for (document in result) {
                     Log.d(TAG, "${document.id} => ${document.data}")
                 }
+                for (document in result) {
+                    // Assign values from Firestore document to ProfileUIState object
+                    userProfileUIState.firstName = document.getString("firstName") ?: ""
+                    userProfileUIState.lastName = document.getString("lastName") ?: ""
+                    userProfileUIState.email = document.getString("email") ?: ""
+                    userProfileUIState.bio = document.getString("bio") ?: ""
+                    userProfileUIState.phone = document.getString("phone") ?: ""
+                    userProfileUIState.university = document.getString("university") ?: ""
+                    userProfileUIState.course = document.getString("course") ?: ""
+
+                    // Print the values for verification
+                    Log.d(TAG, "Assigned values: $profileUIState")
+                }
+                setModelInProgress = false
             }
             .addOnFailureListener { exception ->
                 Log.w(TAG, "Error getting documents.", exception)

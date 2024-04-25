@@ -55,12 +55,15 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
             ) {
 
                 HeadingTextComponent(value = stringResource(id = R.string.welcome))
+                NormalTextComponent(value = "to")
+
                 NormalTextComponent(value = stringResource(R.string.study_buddies))
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 MyTextFieldComponent(labelValue = stringResource(id = R.string.email),
                     painterResource(id = R.drawable.message),
+                    initialValue = "",
                     onTextChanged = {
                         loginViewModel.onEvent(LoginUIEvent.EmailChanged(it))
                     },
