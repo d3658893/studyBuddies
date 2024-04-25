@@ -7,15 +7,14 @@ import com.example.studybuddies.data.rules.Validator
 import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginViewModel : ViewModel() {
 
     private val TAG = LoginViewModel::class.simpleName
 
     var loginUIState = mutableStateOf(LoginUIState())
-
     var allValidationsPassed = mutableStateOf(false)
-
     var loginInProgress = mutableStateOf(false)
 
 
@@ -84,6 +83,7 @@ class LoginViewModel : ViewModel() {
                 loginInProgress.value = false
 
             }
+
 
     }
 

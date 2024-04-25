@@ -6,6 +6,7 @@
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
     <string name="email">Email</string>
+    <string name="phone">Phone</string>
     <string name="password">Password</string>
     <string name="hide_password">Hide Password</string>
     <string name="show_password">Show Password</string>
@@ -13,6 +14,9 @@
     <string name="termsAndConditionHeader">Term of Use</string>
     <string name="register">Register</string>
     <string name="login">Login</string>
+    <string name="edit">Edit Profile</string>
+    <string name="universities">Universities</string>
+    <string name="courses">Courses</string>
     <string name="or">or</string>
     <string name="go_to_login">Already have an account? Login</string>
 
@@ -20,6 +24,10 @@
     <string name="home">Home</string>
     <string name="logout">Logout</string>
     <string name="menu">Menu</string>
-    <string name="navigation_header">App Drawer</string>
+    <string name="navigation_header">Main Menu</string>
+    <string name="study_buddies">Study Buddies</string>
+    <string name="bio">Bio</string>
+    <string name="save">Save</string>
+    <string name="user_profile">User Profile</string>
 
 </resources>

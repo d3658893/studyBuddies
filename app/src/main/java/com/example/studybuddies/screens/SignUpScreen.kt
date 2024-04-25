@@ -47,7 +47,7 @@ fun SignUpScreen(signupViewModel: SignupViewModel = viewModel()) {
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
 
-                NormalTextComponent(value = stringResource(id = R.string.hello))
+                NormalTextComponent(value = stringResource(id = R.string.study_buddies))
                 HeadingTextComponent(value = stringResource(id = R.string.create_account))
                 Spacer(modifier = Modifier.height(20.dp))
 

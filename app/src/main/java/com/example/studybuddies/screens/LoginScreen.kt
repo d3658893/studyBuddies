@@ -54,8 +54,9 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
                     .fillMaxSize()
             ) {
 
-                NormalTextComponent(value = stringResource(id = R.string.login))
                 HeadingTextComponent(value = stringResource(id = R.string.welcome))
+                NormalTextComponent(value = stringResource(R.string.study_buddies))
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 MyTextFieldComponent(labelValue = stringResource(id = R.string.email),

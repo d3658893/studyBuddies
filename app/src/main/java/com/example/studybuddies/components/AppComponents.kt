@@ -1,13 +1,20 @@
 package com.example.studybuddies.components
 
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -16,11 +23,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
@@ -29,26 +38,38 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -67,15 +88,23 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.example.studybuddies.R
 import com.example.studybuddies.data.NavigationItem
-import com.example.studybuddies.ui.theme.AccentColor
 import com.example.studybuddies.ui.theme.BgColor
 import com.example.studybuddies.ui.theme.GrayColor
-import com.example.studybuddies.ui.theme.Primary
+import com.example.studybuddies.ui.theme.Purple40
 import com.example.studybuddies.ui.theme.Secondary
 import com.example.studybuddies.ui.theme.TextColor
+import com.example.studybuddies.ui.theme.WhiteColor
 import com.example.studybuddies.ui.theme.componentShapes
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
 
 @Composable
 fun NormalTextComponent(value: String) {
@@ -88,7 +117,7 @@ fun NormalTextComponent(value: String) {
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Normal
-        ), color = Primary,
+        ), color = Purple40,
         textAlign = TextAlign.Center
     )
 }
@@ -104,7 +133,7 @@ fun HeadingTextComponent(value: String) {
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Normal
-        ), color = Primary,
+        ), color = Purple40,
         textAlign = TextAlign.Center
     )
 }
@@ -128,9 +157,9 @@ fun MyTextFieldComponent(
             .clip(componentShapes.small),
         label = { Text(text = labelValue) },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Primary,
-            focusedLabelColor = Primary,
-            cursorColor = Primary,
+            focusedBorderColor = Purple40,
+            focusedLabelColor = Purple40,
+            cursorColor = Purple40,
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = true,
@@ -146,8 +175,46 @@ fun MyTextFieldComponent(
         isError = !errorStatus
     )
 }
+@Composable
+fun MyTextAreaFieldComponent(
+    labelValue: String, painterResource: Painter,
+    onTextChanged: (String) -> Unit,
+    errorStatus: Boolean = false
+) {
 
+    val textValue = remember {
+        mutableStateOf("")
+    }
+    val localFocusManager = LocalFocusManager.current
+    val text = rememberSaveable { mutableStateOf("") }
 
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BgColor)
+            .height(100.dp)
+            .clip(componentShapes.small),
+//            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
+            label = { Text(text = labelValue) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Purple40,
+                focusedLabelColor = Purple40,
+                cursorColor = Purple40,
+            ),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+//        singleLine = true,
+//        maxLines = 1,
+        value = text.value,
+        onValueChange = {
+            text.value = it
+            onTextChanged(it)
+        },
+//        trailingIcon = {
+//            Icon(painter = painterResource, contentDescription = "")
+//        },
+        isError = !errorStatus
+    )
+}
 @Composable
 fun PasswordTextFieldComponent(
     labelValue: String, painterResource: Painter,
@@ -171,9 +238,9 @@ fun PasswordTextFieldComponent(
             .clip(componentShapes.small),
         label = { Text(text = labelValue) },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Primary,
-            focusedLabelColor = Primary,
-            cursorColor = Primary,
+            focusedBorderColor = Purple40,
+            focusedLabelColor = Purple40,
+            cursorColor = Purple40,
 //            backgroundColor = BgColor
         ),
         keyboardOptions = KeyboardOptions(
@@ -253,12 +320,12 @@ fun ClickableTextComponent(value: String, onTextSelected: (String) -> Unit) {
 
     val annotatedString = buildAnnotatedString {
         append(initialText)
-        withStyle(style = SpanStyle(color = Primary)) {
+        withStyle(style = SpanStyle(color = Purple40)) {
             pushStringAnnotation(tag = privacyPolicyText, annotation = privacyPolicyText)
             append(privacyPolicyText)
         }
         append(andText)
-        withStyle(style = SpanStyle(color = Primary)) {
+        withStyle(style = SpanStyle(color = Purple40)) {
             pushStringAnnotation(tag = termsAndConditionsText, annotation = termsAndConditionsText)
             append(termsAndConditionsText)
         }
@@ -277,7 +344,6 @@ fun ClickableTextComponent(value: String, onTextSelected: (String) -> Unit) {
 
     })
 }
-
 @Composable
 fun ButtonComponent(value: String, onButtonClicked: () -> Unit, isEnabled: Boolean = false) {
     Button(
@@ -291,26 +357,60 @@ fun ButtonComponent(value: String, onButtonClicked: () -> Unit, isEnabled: Boole
         colors = ButtonDefaults.buttonColors(Color.Transparent),
         shape = RoundedCornerShape(50.dp),
         enabled = isEnabled
-    ) {
+    ){
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(48.dp)
                 .background(
-                    brush = Brush.horizontalGradient(listOf(Secondary, Primary)),
+                    brush = Brush.horizontalGradient(listOf(Secondary, Purple40)),
                     shape = RoundedCornerShape(50.dp)
                 ),
             contentAlignment = Alignment.Center
-        ) {
+        ){
             Text(
                 text = value,
                 fontSize = 18.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
-
         }
+    }
+}
+@Composable
+fun LeftAlignButtonComponent(value: String, onButtonClicked: () -> Unit) {
 
+    Button(
+        modifier = Modifier
+            .width(90.dp)
+            .heightIn(48.dp),
+        onClick = {
+            onButtonClicked.invoke()
+        },
+        contentPadding = PaddingValues(),
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        shape = RoundedCornerShape(50.dp),
+        enabled = true
+    ){
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(38.dp)
+//                .align(Alignment.End)
+                .background(
+                    brush = Brush.horizontalGradient(listOf(Color.Blue, Purple40)),
+                    shape = RoundedCornerShape(50.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ){
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -321,7 +421,7 @@ fun DividerTextComponent() {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        HorizontalDivider(
+        Divider(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -335,7 +435,7 @@ fun DividerTextComponent() {
             fontSize = 18.sp,
             color = TextColor
         )
-        HorizontalDivider(
+        Divider(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -345,7 +445,6 @@ fun DividerTextComponent() {
     }
 }
 
-
 @Composable
 fun ClickableLoginTextComponent(tryingToLogin: Boolean = true, onTextSelected: (String) -> Unit) {
     val initialText =
@@ -354,7 +453,7 @@ fun ClickableLoginTextComponent(tryingToLogin: Boolean = true, onTextSelected: (
 
     val annotatedString = buildAnnotatedString {
         append(initialText)
-        withStyle(style = SpanStyle(color = Primary)) {
+        withStyle(style = SpanStyle(color = Purple40)) {
             pushStringAnnotation(tag = loginText, annotation = loginText)
             append(loginText)
         }
@@ -421,7 +520,127 @@ fun UploadImageComponent(painterResource:Painter) {
     }
 
 }
+@Composable
+fun UniversityDDComponent(itemList: List<String>, selectedIndex: Int, modifier: Modifier, onItemClick: (Int) -> Unit) {
 
+    var showDropdown by rememberSaveable { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center) {
+
+        // button
+        Box(
+            modifier = modifier
+                .background(Color.Red)
+                .clickable { showDropdown = true },
+//            .clickable { showDropdown = !showDropdown },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = itemList[selectedIndex], modifier = Modifier.padding(3.dp))
+        }
+
+        // dropdown list
+        Box() {
+            if (showDropdown) {
+                Popup(
+                    alignment = Alignment.TopCenter,
+                    properties = PopupProperties(
+                        excludeFromSystemGesture = true,
+                    ),
+                    // to dismiss on click outside
+                    onDismissRequest = { showDropdown = false }
+                ) {
+
+                    Column(
+                        modifier = modifier
+                            .heightIn(max = 90.dp)
+                            .verticalScroll(state = scrollState)
+                            .border(width = 1.dp, color = Color.Gray),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+
+                        itemList.onEachIndexed { index, item ->
+                            if (index != 0) {
+                                Divider(thickness = 1.dp, color = Color.LightGray)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.Green)
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onItemClick(index)
+                                        showDropdown = !showDropdown
+                                    },
+                                contentAlignment = Alignment.Center
+                            ){
+                                Text(text = item,)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExposedDropdownMenuBoxComponent(itemList: List<String>, label:String,
+                                    onTextChanged: (String) -> Unit,) {
+    val context = LocalContext.current
+//    val coffeeDrinks = arrayOf("Americano", "Cappuccino", "Espresso", "Latte", "Mocha")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(itemList[0]) }
+
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+            TextField(
+                label = {Text(text = label)},
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+                    .background(BgColor)
+                    .clip(componentShapes.small),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Purple40,
+                    focusedLabelColor = Purple40,
+                    cursorColor = Purple40,
+                )
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                itemList.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(text = item) },
+                        onClick = {
+                            selectedText = item
+                            onTextChanged(item)
+                            expanded = false
+                            Toast.makeText(context, item, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+// Layout Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppToolbar(
@@ -430,10 +649,15 @@ fun AppToolbar(
 ) {
 
     TopAppBar(
-//        backgroundColor = Primary,
+        modifier = Modifier.background(Purple40),
+        colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Purple40,
+                        titleContentColor = WhiteColor,
+                        navigationIconContentColor = WhiteColor
+                    ),
         title = {
             Text(
-                text = toolbarTitle, color = Color.White
+                text = toolbarTitle, color = WhiteColor
             )
         },
         navigationIcon = {
@@ -446,7 +670,6 @@ fun AppToolbar(
                     tint = Color.White
                 )
             }
-
         },
         actions = {
             IconButton(onClick = {
@@ -454,34 +677,31 @@ fun AppToolbar(
             }) {
                 Icon(
                     imageVector = Icons.Filled.Logout,
+                    tint = Color.White,
                     contentDescription = stringResource(id = R.string.logout),
                 )
             }
         }
     )
 }
-
 @Composable
 fun NavigationDrawerHeader(value: String?) {
     Box(
         modifier = Modifier
             .background(
                 Brush.horizontalGradient(
-                    listOf(Primary, Secondary)
+                    listOf(Purple40, Purple40)
                 )
             )
             .fillMaxWidth()
             .height(180.dp)
             .padding(32.dp)
     ) {
-
         NavigationDrawerText(
-            title = value?:stringResource(R.string.navigation_header), 28.sp , AccentColor
+            title = value?:stringResource(R.string.navigation_header), 18.sp , WhiteColor
         )
-
     }
 }
-
 @Composable
 fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>,
                          onNavigationItemClicked:(NavigationItem) -> Unit) {
@@ -490,24 +710,21 @@ fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>,
         items(navigationDrawerItems) {
             NavigationItemRow(item = it,onNavigationItemClicked)
         }
-
     }
 }
-
 @Composable
 fun NavigationItemRow(item: NavigationItem,
                       onNavigationItemClicked:(NavigationItem) -> Unit) {
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
                 onNavigationItemClicked.invoke(item)
             }
+
             .padding(all = 16.dp)
     ) {
-
+//        Outline.Rectangle()
         Icon(
             imageVector = item.icon,
             contentDescription = item.description,
@@ -515,30 +732,139 @@ fun NavigationItemRow(item: NavigationItem,
 
         Spacer(modifier = Modifier.width(18.dp))
 
-        NavigationDrawerText(title = item.title, 18.sp, Primary)
-
-
+        NavigationDrawerText(title = item.title, 18.sp, Purple40)
     }
 }
-
 @Composable
 fun NavigationDrawerText(title: String, textUnit: TextUnit,color: Color) {
 
     val shadowOffset = Offset(4f, 6f)
-
     Text(
         text = title, style = TextStyle(
-            color = Color.Black,
+            color = color,
             fontSize = textUnit,
             fontStyle = FontStyle.Normal,
-            shadow = Shadow(
-                color = Primary,
-                offset = shadowOffset, 2f
-            )
+//            shadow = Shadow(
+//                color = Primary,
+//                offset = shadowOffset, 2f
+//            )
         )
     )
 }
+class DateUtils {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertMillisToLocalDate(millis: Long) : LocalDate {
+        return Instant
+            .ofEpochMilli(millis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertMillisToLocalDateWithFormatter(date: LocalDate, dateTimeFormatter: DateTimeFormatter) : LocalDate {
+        //Convert the date to a long in millis using a dateformmater
+        val dateInMillis = LocalDate.parse(date.format(dateTimeFormatter), dateTimeFormatter)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
 
+        //Convert the millis to a localDate object
+        return Instant
+            .ofEpochMilli(dateInMillis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun dateToString(date: LocalDate): String {
+        val dateFormatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM, yyyy", Locale.getDefault())
+        val dateInMillis = convertMillisToLocalDateWithFormatter(date, dateFormatter)
+        return dateFormatter.format(dateInMillis)
+    }
+}
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePicker() {
+    val dateState = rememberDatePickerState()
+    val millisToLocalDate = dateState.selectedDateMillis?.let {
+        DateUtils().convertMillisToLocalDate(it)
+    }
+    val dateToString = millisToLocalDate?.let {
+        DateUtils().dateToString(millisToLocalDate)
+    } ?: ""
+    Column {
+        DatePicker(
+//            dateFormatter = DatePickerFormatter(
+//                selectedDateSkeleton = "EE, dd MMM, yyyy",
+//            ),
+            title = {
+                Text(text = "Manufactured Date")
+            },
+            state = dateState,
+            showModeToggle = true
+        )
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            text = dateToString
+        )
+    }
+}
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerWithDialog(
+    modifier: Modifier = Modifier
+) {
+    val dateState = rememberDatePickerState()
+    val millisToLocalDate = dateState.selectedDateMillis?.let {
+        DateUtils().convertMillisToLocalDate(it)
+    }
+    val dateToString = millisToLocalDate?.let {
+        DateUtils().dateToString(millisToLocalDate)
+    } ?: "Choose Date"
+    var showDialog by remember { mutableStateOf(false) }
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = {
+                    showDialog = true
+                }),
+            text = dateToString,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineMedium
+        )
+        if (showDialog) {
+            DatePickerDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    Button(
+                        onClick = { showDialog = false }
+                    ) {
+                        Text(text = "OK")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showDialog = false }
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = dateState,
+                    showModeToggle = true
+                )
+            }
+        }
+    }
+}
 
 
 

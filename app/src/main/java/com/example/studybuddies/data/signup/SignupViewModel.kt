@@ -7,7 +7,9 @@ import com.example.studybuddies.data.RegistrationUIState
 import com.example.studybuddies.data.rules.Validator
 import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 
 class SignupViewModel : ViewModel() {
@@ -73,7 +75,9 @@ class SignupViewModel : ViewModel() {
         printState()
         createUserInFirebase(
             email = registrationUIState.value.email,
-            password = registrationUIState.value.password
+            password = registrationUIState.value.password,
+            fName = registrationUIState.value.firstName,
+            lName = registrationUIState.value.lastName
         )
     }
 
@@ -128,28 +132,54 @@ class SignupViewModel : ViewModel() {
     }
 
 
-    private fun createUserInFirebase(email: String, password: String) {
+    private fun createUserInFirebase(email: String, password: String, fName:String,lName:String) {
 
         signUpInProgress.value = true
-
+        var isSuccessful : Boolean = false
         FirebaseAuth
             .getInstance()
             .createUserWithEmailAndPassword(email.trim(), password)
             .addOnCompleteListener {
                 Log.d(TAG, "Inside_OnCompleteListener")
                 Log.d(TAG, " isSuccessful = ${it.isSuccessful}")
-
+                isSuccessful = it.isSuccessful
                 signUpInProgress.value = false
-                if (it.isSuccessful) {
-                    StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
-                }
             }
             .addOnFailureListener {
                 Log.d(TAG, "Inside_OnFailureListener")
                 Log.d(TAG, "Exception= ${it.message}")
                 Log.d(TAG, "Exception= ${it.localizedMessage}")
             }
+        createUserProfile(email,password,fName,lName,isSuccessful)
+
+
     }
+    private fun createUserProfile(email: String, password: String, fName:String,lName:String,isSuccessful:Boolean) {
+        Log.d(TAG,"sds$isSuccessful")
+
+            val db = Firebase.firestore
+            // Define the data to be set in the new document
+            val userData = hashMapOf(
+                "firstName" to fName,
+                "lastName" to lName,
+                "email" to email,
+                "password" to password
+            )
+            Log.d(TAG, "inside the new query")
+            // Set the data in the new document
+            db.collection("users").
+            //        document().
+            add(userData)
+                .addOnSuccessListener {
+                    Log.d(TAG, "DocumentSnapshot successfully written!")
+                    StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
+
+                }
+                .addOnFailureListener {
+                    Log.w(TAG, "Error writing document")
+                }
+        }
 
 
-}
+
+    }

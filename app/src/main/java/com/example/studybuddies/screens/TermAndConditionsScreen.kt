@@ -25,9 +25,9 @@ fun TermsAndConditionScreen(){
     ){
         HeadingTextComponent(value = stringResource(id = R.string.termsAndConditionHeader))
     }
-    SystemBackButtonHandler {
-        StudyBuddiesAppRouter.navigateTo(Screen.SignUpScreen)
-    }
+//    SystemBackButtonHandler {
+//        StudyBuddiesAppRouter.navigateTo(Screen.SignUpScreen)
+//    }
 }
 
 @Preview

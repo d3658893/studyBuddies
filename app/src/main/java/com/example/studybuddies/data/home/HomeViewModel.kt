@@ -21,20 +21,20 @@ class HomeViewModel : ViewModel() {
             title = "Home",
             icon = Icons.Default.Home,
             description = "Home Screen",
-            itemId = "homeScreen"
+            itemId = Screen.HomeScreen
+        ),
+        NavigationItem(
+            title = "My Profile",
+            icon = Icons.Default.Favorite,
+            description = "My Profile",
+            itemId = Screen.UserProfileScreen
         ),
         NavigationItem(
             title = "Settings",
             icon = Icons.Default.Settings,
             description = "Settings Screen",
-            itemId = "settingsScreen"
-        ),
-        NavigationItem(
-            title = "Favorite",
-            icon = Icons.Default.Favorite,
-            description = "Favorite Screen",
-            itemId = "favoriteScreen"
-        )
+            itemId = Screen.SignUpScreen
+    ),
     )
 
     val isUserLoggedIn: MutableLiveData<Boolean> = MutableLiveData()
