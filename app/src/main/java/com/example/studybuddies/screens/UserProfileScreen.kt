@@ -1,5 +1,6 @@
 
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +31,14 @@ import com.example.studybuddies.components.HeadingTextComponent
 import com.example.studybuddies.components.LeftAlignButtonComponent
 import com.example.studybuddies.components.MyTextAreaFieldComponent
 import com.example.studybuddies.components.MyTextFieldComponent
+import com.example.studybuddies.components.ProfileImage
 import com.example.studybuddies.data.profile.ProfileUIEvent
 import com.example.studybuddies.data.profile.UserProfileViewModel
 import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.example.studybuddies.navigation.SystemBackButtonHandler
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
     var userProfileUIState = profileViewModel.profileUIState.value
@@ -56,8 +59,9 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
-                    .padding(28.dp)
+                    .padding(20.dp)
             ) {
+
 
                 Column(
                     modifier = Modifier
@@ -65,7 +69,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                 ) {
                     HeadingTextComponent(value = stringResource(id = string.user_profile))
 //                NormalTextComponent(value = stringResource(id = string.study_buddies))
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(80.dp))
                     // Edit Button
                     LeftAlignButtonComponent(
                         value = stringResource(id = string.edit),
@@ -165,6 +169,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                 }
             }
         }
+        ProfileImage()
     }
     SystemBackButtonHandler {
         StudyBuddiesAppRouter.navigateTo(Screen.SignUpScreen)
@@ -172,6 +177,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Preview
 @Composable
 fun DefaultPreview(){

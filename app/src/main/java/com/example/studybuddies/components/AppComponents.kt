@@ -1,8 +1,17 @@
 package com.example.studybuddies.components
 
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,6 +47,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
@@ -67,11 +77,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -90,6 +102,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.MutableLiveData
 import com.example.studybuddies.R
 import com.example.studybuddies.data.NavigationItem
 import com.example.studybuddies.ui.theme.BgColor
@@ -99,6 +112,10 @@ import com.example.studybuddies.ui.theme.Secondary
 import com.example.studybuddies.ui.theme.TextColor
 import com.example.studybuddies.ui.theme.WhiteColor
 import com.example.studybuddies.ui.theme.componentShapes
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.storage
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -674,12 +691,290 @@ fun ExposedDropdownMenuBoxComponent(
                             onTextChanged(item)
 //                            expanded = false
                             Toast.makeText(context, item, Toast.LENGTH_SHORT).show()
+
                         }
                     )
                 }
             }
         }
     }
+
+// Image Picker
+@Composable
+fun UploadProfilePicBtnComponent(value: String, onButtonClicked: () -> Unit, isEnabled: Boolean = false) {
+    Button(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(48.dp),
+        onClick = {
+            onButtonClicked.invoke()
+        },
+        contentPadding = PaddingValues(),
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        shape = RoundedCornerShape(50.dp),
+        enabled = isEnabled
+    ){
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(48.dp)
+                .background(
+                    brush = Brush.horizontalGradient(listOf(Secondary, Purple40)),
+                    shape = RoundedCornerShape(50.dp)
+                ),
+//            contentAlignment = Alignment.Center
+
+        ){
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.P)
+@Composable
+fun ProfileImage(){
+//    Image(
+//        painter = painterResource(id = R.drawable.user_svgrepo_com),
+//        contentDescription = null,
+//        contentScale = ContentScale.FillBounds,
+//        modifier = Modifier.fillMaxWidth()
+//    )
+
+    val isUploading = remember {
+        mutableStateOf(false)
+    }
+    val context = LocalContext.current
+    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(),android.R.drawable.ic_menu_camera)
+    val bitmap = remember{ mutableStateOf(img) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) {
+        if(it!=null){
+            bitmap.value = it
+        }
+    }
+
+    val launchImage = rememberLauncherForActivityResult(
+        contract =ActivityResultContracts.GetContent()
+    ) {
+        if(Build.VERSION.SDK_INT < 20){
+            bitmap.value =  MediaStore.Images.Media.getBitmap(context.contentResolver,it)
+        }
+        else{
+            val source = it?.let {it1 ->
+                ImageDecoder.createSource(context.contentResolver,it1)
+            }
+            bitmap.value = source?.let {it1 ->
+                ImageDecoder.decodeBitmap(it1)
+            }!!
+        }
+    }
+
+    var showDialog by remember { mutableStateOf(false) }
+
+
+        Box(
+//        modifier = Modifier
+//            .padding(top=80.dp, start = 60.dp)
+    ){
+        Column(horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 70.dp)
+                .padding(10.dp)
+            ){
+            Image(
+                bitmap.value.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(100.dp)
+                    .background(Purple40)
+                    .border(
+                        width = 1.dp,
+                        color = WhiteColor,
+                        shape = CircleShape
+                    )
+            )
+
+        }
+    }
+    Box(
+    ){
+        Column(horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 130.dp)
+                .padding(10.dp)
+        ) {
+            Image(
+                painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.Black)
+                    .size(30.dp)
+//                    .padding(50.dp)
+                    .clickable { showDialog = true }
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+    }
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 155.dp)
+            .padding(20.dp)
+    ){
+        Button(
+//            contentPadding = PaddingValues(),
+            onClick = {
+            isUploading.value = true
+            bitmap.value.let { bitmap ->  
+                uploadImageToFirebase(bitmap, context as ComponentActivity){success ->
+                    isUploading.value = false
+                    if(success){
+                        Toast.makeText(context,"Uploaded Successfully",Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        Toast.makeText(context,"Failed to Upload",Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        },
+            colors = ButtonDefaults.buttonColors(
+                Purple40
+            )
+        ){
+//            Icon(
+//                imageVector = Icons.TwoTone.CloudUpload,
+//                tint = Purple40,
+//                contentDescription = null,
+////                modifier= Modifier.width(50.dp).height(70.dp)
+//            )
+            Text(
+                text="Upload",
+                fontWeight = FontWeight.Bold,
+                color = WhiteColor,
+
+            )
+        }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp)
+    ){
+        if(showDialog){
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Secondary)
+            ){
+                Column(modifier = Modifier.padding(start = 60.dp)){
+                    Image(
+                        painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clickable {
+                                launcher.launch()
+                                showDialog = false
+                            }
+                    )
+                    Text(
+                        text = "Camera",
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.padding(30.dp))
+                Column {
+                    Image(
+                        painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clickable {
+                                launchImage.launch("image/*")
+                                showDialog = false
+                            }
+                    )
+                    Text(
+                        text = "Gallery",
+                        color = WhiteColor
+                    )
+                }
+                Column(
+                    modifier = Modifier.padding(start = 50.dp,bottom =80.dp)
+                )
+                {
+                    Text(
+                        text = "X",
+                        color = Color.White,
+                        modifier = Modifier.clickable { showDialog = false }
+                    )
+                }
+            }
+        }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier
+            .height(450.dp)
+            .fillMaxWidth()
+        ){
+        if(isUploading.value){
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(16.dp),
+                color = WhiteColor
+            )
+        }
+    }
+
+}
+private val emailId: MutableLiveData<String> = MutableLiveData()
+
+private fun getUserData() {
+    FirebaseAuth.getInstance().currentUser?.also {
+        it.email?.also { email ->
+            emailId.value = email
+        }
+    }
+}
+fun uploadImageToFirebase(bitmap: Bitmap,context:ComponentActivity, callback:(Boolean)-> Unit) {
+    getUserData()
+    val storageRef = Firebase.storage.reference
+    val imageRef = storageRef.child("image/${emailId.value}/${bitmap}")
+
+    val baos = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG,100,baos)
+    val imageData = baos.toByteArray()
+
+    imageRef.putBytes(imageData).addOnSuccessListener {
+        callback(true)
+    }.addOnFailureListener{
+        callback(true)
+    }
+}
 
 // Layout Composable
 @OptIn(ExperimentalMaterial3Api::class)

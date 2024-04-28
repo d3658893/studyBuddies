@@ -139,11 +139,23 @@ class SignupViewModel : ViewModel() {
         FirebaseAuth
             .getInstance()
             .createUserWithEmailAndPassword(email.trim(), password)
-            .addOnCompleteListener {
-                Log.d(TAG, "Inside_OnCompleteListener")
-                Log.d(TAG, " isSuccessful = ${it.isSuccessful}")
-                isSuccessful = it.isSuccessful
-                signUpInProgress.value = false
+            .addOnCompleteListener{task ->
+                if(task.isSuccessful){
+                    FirebaseAuth
+                        .getInstance().currentUser?.sendEmailVerification()
+                        ?.addOnSuccessListener {
+                            Log.d(TAG, "Inside_OnCompleteListener")
+                            Log.d(TAG, " isSuccessful = ${task.isSuccessful}")
+                            isSuccessful = task.isSuccessful
+                            signUpInProgress.value = false
+//                            Toast.makeText(this,"Please Verify your Email!",Toast.LENGTH_LONG).show()
+                        }
+                        ?.addOnFailureListener {
+                            isSuccessful = !task.isSuccessful
+                            signUpInProgress.value = false
+                        }
+                }
+
             }
             .addOnFailureListener {
                 Log.d(TAG, "Inside_OnFailureListener")
