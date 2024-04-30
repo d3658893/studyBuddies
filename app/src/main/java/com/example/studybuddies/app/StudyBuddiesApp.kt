@@ -17,6 +17,7 @@ import com.example.studybuddies.screens.HomeScreen
 import com.example.studybuddies.screens.LoginScreen
 import com.example.studybuddies.screens.PostScreen
 import com.example.studybuddies.screens.SignUpScreen
+import com.example.studybuddies.screens.SplashScreen
 import com.example.studybuddies.screens.TermsAndConditionScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -43,13 +44,18 @@ fun StudyBuddiesApp(){
                 is Screen.HomeScreen -> {
                     HomeScreen()
                 }
+                is Screen.SplashScreen -> {
+                    SplashScreen()
+                }
                 is Screen.UserProfileScreen -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         UserProfileScreen()
                     }
                 }
                 is Screen.PostScreen -> {
-                    PostScreen()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        PostScreen()
+                    }
                 }
 
             }

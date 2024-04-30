@@ -48,6 +48,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -99,6 +101,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -121,6 +124,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.LocalDate
@@ -1146,9 +1152,183 @@ private fun getUserData() {
         }
     }
 }
-fun setImageToFirebase(bitmap: Bitmap,context:ComponentActivity, callback:(Boolean)-> Unit) {
+//@Composable
+//fun PostCards(title: String,description:String,imageURI: String) {
+////    getUserData()
+//    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_camera)
+//    val bitmap = remember { mutableStateOf(img) }
+//    var isUploadingOnLoad by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(imageURI) {
+//        val imageName = FirebaseStorage.getInstance().reference.child("postImages/${imageURI}/")
+//        imageName.getBytes(Long.MAX_VALUE)
+//            .addOnSuccessListener { bytes ->
+//                Log.d("ImageDownload", "Image bytes received: ${bytes.size}")
+//                // Convert the byte array to a bitmap
+//                val downloadedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+//                if (downloadedBitmap != null) {
+//                    // Update the state with the downloaded bitmap
+//                    bitmap.value = downloadedBitmap
+//                    Log.d("bitmap value", "${bitmap.value}")
+//                    isUploadingOnLoad = true
+//                } else {
+//                    Log.e("ImageDownload", "Failed to decode byte array into bitmap")
+//                }
+//            }
+//            .addOnFailureListener { exception ->
+//                Log.e("ImageDownload", "Image download failed", exception)
+//                // Handle failure
+//            }
+////            }
+//    }
+//    if(isUploadingOnLoad){
+//    Box(
+//        modifier = Modifier.fillMaxSize(),
+//        contentAlignment = Alignment.TopStart
+//    ) {
+//
+//        Card(
+//            modifier = Modifier
+//                .width(350.dp)
+//                .height(250.dp),
+//            // shape = CutCornerShape(20.dp)
+//            elevation = CardDefaults.cardElevation(10.dp),
+//            //border = BorderStroke(3.dp,Color.Gray)
+//            colors = CardDefaults.cardColors(
+//                containerColor = Color.White
+//            )
+//        ) {
+//            Column(modifier = Modifier.fillMaxSize()) {
+//                Image(
+//                    bitmap.value.asImageBitmap(),
+//                    modifier= Modifier.height(10.dp),
+////                    painter = rememberAsyncImagePainter(model = bitmap),
+////                    painter = painterResource(id = R.drawable.persepolis),
+//                    contentDescription = "null"
+//                )
+////                Image(
+////                    painterResource(id = R.drawable),
+////                    painter = painterResource(id = android.R.drawable.ic_menu_camera),
+////                    contentDescription = null,
+////                    modifier = Modifier
+////                        .clip(CircleShape)
+////                        .background(Color.Black)
+////                        .size(30.dp)
+//////                    .padding(50.dp)
+////                        .clickable { showDialog = true }
+////                )
+//                Text(
+//                    text = title,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 18.sp,
+//                    modifier = Modifier.padding(10.dp)
+//                )
+//                Text(
+//                    text = description,
+//                    fontSize = 13.sp,
+//                    modifier = Modifier.padding(6.dp),
+//                    maxLines = 3,
+//                    overflow = TextOverflow.Ellipsis,
+//                    color = Color.Gray
+//                )
+//            }
+//
+//        }
+//    }
+//
+//}
+//    isUploadingOnLoad=false
+//}
+@Composable
+fun PostCards(title: String, description: String,author: String, imageURI: String) {
+    val img: Bitmap = BitmapFactory.decodeResource(
+        LocalContext.current.resources,
+        android.R.drawable.ic_menu_camera
+    )
+    val bitmap = remember { mutableStateOf(img) }
+    var isUploadingOnLoad by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        fetchImageAndDisplay(
+            imageURI = imageURI,
+            onImageLoaded = { loadedBitmap ->
+                bitmap.value = loadedBitmap
+                isUploadingOnLoad = true
+            },
+            onFailure = {
+                // Handle failure
+            }
+        )
+    }
+
+    if (isUploadingOnLoad) {
+
+                    Card(
+                        modifier = Modifier
+                            .width(350.dp)
+                            .height(320.dp),
+                        elevation = CardDefaults.cardElevation(10.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        )
+                    ) {
+
+                        Image(
+                            bitmap.value.asImageBitmap(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp), // Half of the card's height
+                            contentDescription = "null"
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = "$title by $author",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(10.dp).padding(start=10.dp)
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+//
+                        Text(
+                            text = description,
+                            fontSize = 13.sp,
+                            modifier = Modifier.fillMaxSize().padding(6.dp).padding(start=10.dp),
+                            maxLines = 30,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+
+//                }
+//            }
+//            }
+        }
+    }
+
+
+suspend fun fetchImageAndDisplay(
+    imageURI: String,
+    onImageLoaded: (Bitmap) -> Unit,
+    onFailure: () -> Unit
+) {
+    try {
+        val imageName = FirebaseStorage.getInstance().reference.child("postImages/$imageURI/")
+        val bytes = withContext(Dispatchers.IO) {
+            imageName.getBytes(Long.MAX_VALUE).await()
+        }
+        val downloadedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        if (downloadedBitmap != null) {
+            onImageLoaded(downloadedBitmap)
+        } else {
+            onFailure()
+        }
+    } catch (e: Exception) {
+        onFailure()
+    }
 }
+
+
 fun uploadImageToFirebase(bitmap: Bitmap,context:ComponentActivity, callback:(Boolean)-> Unit) {
     getUserData()
     val folderRef = FirebaseStorage.getInstance().reference.child("image/${emailId.value}/")

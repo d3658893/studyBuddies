@@ -100,6 +100,7 @@ class UserProfileViewModel : ViewModel() {
             Log.d(TAG, "User is not logged in")
             isUserLoggedIn.value = false
         }
+
     }
 
     private val emailId: MutableLiveData<String> = MutableLiveData()
@@ -120,6 +121,7 @@ class UserProfileViewModel : ViewModel() {
         query
             .get()
             .addOnSuccessListener { result ->
+
                 for (document in result) {
                     Log.d(TAG, "${document.id} => ${document.data}")
                 }
@@ -227,24 +229,9 @@ class UserProfileViewModel : ViewModel() {
                     Log.w(TAG, "Error getting documents", e)
                 }
 
-//            db.collection("users")
-//                .document(userId)
-//                .set(users)
-//                .addOnSuccessListener {documentReference ->
-//                    Log.d(TAG, "DocumentSnapshot added with ID: $documentReference.id")
-//
-////                    Toast.makeText(this,"Successfully Added", Toast.LENGTH_SHORT).show()
-//                }
-//                .addOnFailureListener { e ->
-//                    Log.w(TAG, "Error adding document", e)
-//                }
-            // Once update is complete, set profileUpdateInProgress to false
             profileUpdateInProgress.value = false
 
-            // and navigate to a success screen or perform other actions as needed
         } else {
-            // Handle validation errors (e.g., display error messages to the user)
-//            Log.e(TAG, "Validation errors encountered: ${validationErrors.value}")
         }
     private fun deleteProfileChanges() {
         // Check if there are any validation errors

@@ -73,6 +73,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.6")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.firestore)
+    implementation(libs.play.services.tflite.support)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

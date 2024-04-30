@@ -101,8 +101,7 @@ class PostViewModel : ViewModel() {
         var isImageUploaded = false
         var isImageFetched = false
 
-        Log.d("POST Values", "$title $description $bitmap")
-
+        Log.d("POST Values", "$title $description $bitmap $userName")
 
         val storageRef = Firebase.storage.reference
         val imageRef = storageRef.child("postImages/${bitmap}")
@@ -146,7 +145,6 @@ class PostViewModel : ViewModel() {
                             Log.e("LatestImageName", "Failed to list items: $exception")
                         }
     }
-
 
     private fun savePost(title_:String, description_:String, latestImageName:String, userName:String){
 

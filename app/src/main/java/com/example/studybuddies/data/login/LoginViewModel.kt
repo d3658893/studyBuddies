@@ -7,7 +7,6 @@ import com.example.studybuddies.data.rules.Validator
 import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginViewModel : ViewModel() {
 
@@ -73,7 +72,7 @@ class LoginViewModel : ViewModel() {
 
                 if(it.isSuccessful){
                     loginInProgress.value = false
-                    StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
+                    StudyBuddiesAppRouter.navigateTo(Screen.SplashScreen)
                 }
             }
             .addOnFailureListener {
