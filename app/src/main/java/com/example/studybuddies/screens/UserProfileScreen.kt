@@ -49,9 +49,11 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
     var isComponentVisible by remember { mutableStateOf(false) }
     var isEnabled by remember { mutableStateOf(true) }
 
-    if(!profileViewModel.setModelInProgress) {
+    if(!profileViewModel.setModelInProgress && ProfileImage()) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
 
@@ -172,7 +174,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
         ProfileImage()
     }
     SystemBackButtonHandler {
-        StudyBuddiesAppRouter.navigateTo(Screen.SignUpScreen)
+        StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
     }
 }
 

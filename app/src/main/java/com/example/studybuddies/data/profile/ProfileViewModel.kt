@@ -11,6 +11,7 @@ import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.FirebaseStorage
 
 class UserProfileViewModel : ViewModel() {
 
@@ -119,7 +120,6 @@ class UserProfileViewModel : ViewModel() {
         query
             .get()
             .addOnSuccessListener { result ->
-
                 for (document in result) {
                     Log.d(TAG, "${document.id} => ${document.data}")
                 }
@@ -140,6 +140,21 @@ class UserProfileViewModel : ViewModel() {
             }
             .addOnFailureListener { exception ->
                 Log.w(TAG, "Error getting documents.", exception)
+            }
+        val imageName = FirebaseStorage.getInstance().reference.child("image/${emailId.value}/")
+        Log.d("Images","ImageName $imageName");
+        imageName.listAll()
+            .addOnSuccessListener { listResult ->
+                // Assuming there's only one image in the folder
+                if (listResult.items.isNotEmpty()) {
+                    val imageNames = listResult.items[0].name
+                    val storageRef = listResult.items[0]
+                } else {
+                    Log.d("Image Name","No images found in the folder")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("error","Failed to list items: $exception")
             }
     }
     private fun validateLoginUIDataWithRules() {

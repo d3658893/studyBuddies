@@ -15,6 +15,7 @@ import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
 import com.example.studybuddies.screens.HomeScreen
 import com.example.studybuddies.screens.LoginScreen
+import com.example.studybuddies.screens.PostScreen
 import com.example.studybuddies.screens.SignUpScreen
 import com.example.studybuddies.screens.TermsAndConditionScreen
 
@@ -43,7 +44,12 @@ fun StudyBuddiesApp(){
                     HomeScreen()
                 }
                 is Screen.UserProfileScreen -> {
-                    UserProfileScreen()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        UserProfileScreen()
+                    }
+                }
+                is Screen.PostScreen -> {
+                    PostScreen()
                 }
 
             }

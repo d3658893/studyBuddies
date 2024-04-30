@@ -10,6 +10,7 @@ sealed class Screen {
     object LoginScreen : Screen()
     object HomeScreen : Screen()
     object UserProfileScreen : Screen()
+    object PostScreen : Screen()
 }
 
 

@@ -1,5 +1,7 @@
 package com.example.studybuddies.components
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -66,6 +68,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,6 +105,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import com.example.studybuddies.R
 import com.example.studybuddies.data.NavigationItem
@@ -112,8 +116,10 @@ import com.example.studybuddies.ui.theme.Secondary
 import com.example.studybuddies.ui.theme.TextColor
 import com.example.studybuddies.ui.theme.WhiteColor
 import com.example.studybuddies.ui.theme.componentShapes
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 import java.io.ByteArrayOutputStream
 import java.time.Instant
@@ -190,44 +196,6 @@ fun MyTextFieldComponent(
         isError = !errorStatus // Invert error status to match OutlinedTextField
     )
 }
-//@Composable
-//fun MyTextFieldComponent(
-//    labelValue: String, painterResource: Painter,
-//    onTextChanged: (String) -> Unit,
-//
-//    errorStatus: Boolean = false
-//){
-//
-//    val textValue = remember {
-//        mutableStateOf("")
-//    }
-//    val localFocusManager = LocalFocusManager.current
-//
-//    OutlinedTextField(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .background(BgColor)
-//            .clip(componentShapes.small),
-//        label = { Text(text = labelValue) },
-//        colors = OutlinedTextFieldDefaults.colors(
-//            focusedBorderColor = Purple40,
-//            focusedLabelColor = Purple40,
-//            cursorColor = Purple40,
-//        ),
-//        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-//        singleLine = true,
-//        maxLines = 1,
-//        value = textValue.value,
-//        onValueChange = {
-//            textValue.value = it
-//            onTextChanged(it)
-//        },
-//        leadingIcon = {
-//            Icon(painter = painterResource, contentDescription = "")
-//        },
-//        isError = !errorStatus
-//    )
-//}
 @Composable
 fun MyTextAreaFieldComponent(
     labelValue: String, painterResource: Painter,
@@ -735,27 +703,34 @@ fun UploadProfilePicBtnComponent(value: String, onButtonClicked: () -> Unit, isE
     }
 }
 
+fun checkPermissionFor(context: Context, permission: String): Boolean{
+    return ContextCompat.checkSelfPermission(context,permission) == PackageManager.PERMISSION_GRANTED
+}
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun ProfileImage(){
-//    Image(
-//        painter = painterResource(id = R.drawable.user_svgrepo_com),
-//        contentDescription = null,
-//        contentScale = ContentScale.FillBounds,
-//        modifier = Modifier.fillMaxWidth()
-//    )
-
-    val isUploading = remember {
-        mutableStateOf(false)
-    }
+fun ProfileImage():Boolean {
+    getUserData()
     val context = LocalContext.current
-    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(),android.R.drawable.ic_menu_camera)
-    val bitmap = remember{ mutableStateOf(img) }
+    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_camera)
+    var bitmap = remember { mutableStateOf(img) }
+    var isUploading = remember { mutableStateOf(false) }
+    var isUploadingOnLoad by remember { mutableStateOf(false) }
+    var downloadedBitmapState = remember { mutableStateOf<Bitmap?>(null) }
+
+
+    val cameraPermission = android.Manifest.permission.CAMERA
+    var isCameraPermissionGranted by remember { mutableStateOf(false) }
+
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
+        contract = ActivityResultContracts.TakePicturePreview(),
+//        onResult = { isGranted ->
+//            if(isGranted){
+////                ActivityResultContracts.TakePicturePreview()
+//            }
+//        }
     ) {
-        if(it!=null){
+        if (it != null) {
             bitmap.value = it
         }
     }
@@ -775,23 +750,19 @@ fun ProfileImage(){
             }!!
         }
     }
-
     var showDialog by remember { mutableStateOf(false) }
-
-
-        Box(
-//        modifier = Modifier
-//            .padding(top=80.dp, start = 60.dp)
-    ){
+    Box(){
         Column(horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 70.dp)
                 .padding(10.dp)
-            ){
+        ){
             Image(
                 bitmap.value.asImageBitmap(),
+//            Image(
+//                bitmap.value.asImageBitmap(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -806,6 +777,30 @@ fun ProfileImage(){
             )
 
         }
+    }
+    // Fetch the image from Firebase Storage
+    LaunchedEffect(emailId.value) {
+        val imageName = FirebaseStorage.getInstance().reference.child("image/${emailId.value}/")
+        imageName.listAll()
+            .addOnSuccessListener { listResult ->
+                if (listResult.items.isNotEmpty()) {
+                    val sortedItems = listResult.items
+                    val storageRef = sortedItems[0]
+//                    val storageRef = listResult.items[0]
+                    // Download the image directly as a byte array
+                    storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener { bytes ->
+                        // Convert the byte array to a bitmap
+                        val downloadedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                        // Update the state with the downloaded bitmap
+                        bitmap.value = downloadedBitmap
+                        isUploadingOnLoad = true
+                    }.addOnFailureListener {
+                        // Handle failure
+                    }
+                } else {
+                    // Handle the case when the list is empty
+                }
+            }
     }
     Box(
     ){
@@ -838,10 +833,9 @@ fun ProfileImage(){
             .padding(20.dp)
     ){
         Button(
-//            contentPadding = PaddingValues(),
             onClick = {
             isUploading.value = true
-            bitmap.value.let { bitmap ->  
+            bitmap.value.let { bitmap ->
                 uploadImageToFirebase(bitmap, context as ComponentActivity){success ->
                     isUploading.value = false
                     if(success){
@@ -857,12 +851,6 @@ fun ProfileImage(){
                 Purple40
             )
         ){
-//            Icon(
-//                imageVector = Icons.TwoTone.CloudUpload,
-//                tint = Purple40,
-//                contentDescription = null,
-////                modifier= Modifier.width(50.dp).height(70.dp)
-//            )
             Text(
                 text="Upload",
                 fontWeight = FontWeight.Bold,
@@ -871,6 +859,203 @@ fun ProfileImage(){
             )
         }
     }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp)
+    ){
+        if(showDialog){
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Purple40)
+            ){
+                Column(modifier = Modifier.padding(start = 60.dp)){
+                    Image(
+                        painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clickable {
+                                launcher.launch()
+                                showDialog = false
+                            }
+                    )
+                    Text(
+                        text = "Camera",
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.padding(30.dp))
+                Column {
+                    Image(
+                        painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clickable {
+                                launchImage.launch("image/*")
+                                showDialog = false
+                            }
+                    )
+                    Text(
+                        text = "Gallery",
+                        color = WhiteColor
+                    )
+                }
+                Column(
+                    modifier = Modifier.padding(start = 50.dp,bottom =80.dp)
+                )
+                {
+                    Text(
+                        text = "X",
+                        color = Color.White,
+                        modifier = Modifier.clickable { showDialog = false }
+                    )
+                }
+            }
+        }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier
+            .height(450.dp)
+            .fillMaxWidth()
+        ){
+        if(isUploading.value){
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(16.dp),
+                color = WhiteColor
+            )
+        }
+    }
+    return isUploadingOnLoad
+}
+@RequiresApi(Build.VERSION_CODES.P)
+@Composable
+fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
+    getUserData()
+    val context = LocalContext.current
+    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_gallery)
+    val bitmap = remember { mutableStateOf(img) }
+    val isUploading = remember { mutableStateOf(false) }
+    var isUploadingOnLoad by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+    ) {
+        if (it != null) {
+            bitmap.value = it
+        }
+    }
+
+    val launchImage = rememberLauncherForActivityResult(
+        contract =ActivityResultContracts.GetContent()
+    ) {
+        if(Build.VERSION.SDK_INT < 20){
+            bitmap.value =  MediaStore.Images.Media.getBitmap(context.contentResolver,it)
+        }
+        else{
+            val source = it?.let {it1 ->
+                ImageDecoder.createSource(context.contentResolver,it1)
+            }
+            bitmap.value = source?.let {it1 ->
+                ImageDecoder.decodeBitmap(it1)
+            }!!
+        }
+    }
+
+    var showDialog by remember { mutableStateOf(false) }
+    Box(){
+        Column(horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+                .padding(30.dp)
+        ){
+            Image(
+                bitmap.value.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+//                    .clip(CircleShape)
+                    .size(300.dp)
+                    .background(Purple40)
+                    .border(
+                        width = 1.dp,
+                        color = WhiteColor,
+                        shape = CircleShape
+                    )
+            )
+        }
+    }
+
+    Box(
+    ){
+        Column(horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 200.dp)
+                .padding(30.dp)
+        ) {
+            Image(
+                painter = painterResource(id = android.R.drawable.ic_menu_add),
+                contentDescription = null,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(Color.Black)
+                    .size(60.dp)
+//                    .padding(50.dp)
+                    .clickable { showDialog = true }
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+    }
+//    Column(
+//        horizontalAlignment = Alignment.Start,
+//        verticalArrangement = Arrangement.SpaceEvenly,
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(top = 155.dp)
+//            .padding(20.dp)
+//    ){
+//        Button(
+//            onClick = {
+//            isUploading.value = true
+//            bitmap.value.let { bitmap ->
+//                uploadImageToFirebase(bitmap, context as ComponentActivity){success ->
+//                    isUploading.value = false
+//                    if(success){
+//                        Toast.makeText(context,"Uploaded Successfully",Toast.LENGTH_SHORT).show()
+//                    }
+//                    else{
+//                        Toast.makeText(context,"Failed to Upload",Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            }
+//        },
+//            colors = ButtonDefaults.buttonColors(
+//                Purple40
+//            )
+//        ){
+//            Text(
+//                text="Upload",
+//                fontWeight = FontWeight.Bold,
+//                color = WhiteColor,
+//
+//            )
+//        }
+//    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
@@ -949,7 +1134,8 @@ fun ProfileImage(){
             )
         }
     }
-
+    onImageChanged(bitmap.value)
+    return isUploadingOnLoad
 }
 private val emailId: MutableLiveData<String> = MutableLiveData()
 
@@ -960,8 +1146,27 @@ private fun getUserData() {
         }
     }
 }
+fun setImageToFirebase(bitmap: Bitmap,context:ComponentActivity, callback:(Boolean)-> Unit) {
+
+}
 fun uploadImageToFirebase(bitmap: Bitmap,context:ComponentActivity, callback:(Boolean)-> Unit) {
     getUserData()
+    val folderRef = FirebaseStorage.getInstance().reference.child("image/${emailId.value}/")
+
+    folderRef.listAll()
+        .addOnSuccessListener { listResult ->
+            val deleteTasks = listResult.items.map { it.delete() }
+            Tasks.whenAllComplete(deleteTasks)
+                .addOnSuccessListener {
+                    // All files successfully deleted
+                }
+                .addOnFailureListener { exception ->
+                    // Handle failure
+                }
+        }
+        .addOnFailureListener { exception ->
+            // Handle failure
+        }
     val storageRef = Firebase.storage.reference
     val imageRef = storageRef.child("image/${emailId.value}/${bitmap}")
 

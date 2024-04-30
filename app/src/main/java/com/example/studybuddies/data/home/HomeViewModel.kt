@@ -3,6 +3,7 @@ package com.example.studybuddies.data.home
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.lifecycle.MutableLiveData
@@ -29,6 +30,12 @@ class HomeViewModel : ViewModel() {
             description = "My Profile",
             itemId = Screen.UserProfileScreen
         ),
+        NavigationItem(
+            title = "Post",
+            icon = Icons.Default.GroupAdd,
+            description = "Post Screen",
+            itemId = Screen.PostScreen
+    ),
         NavigationItem(
             title = "Settings",
             icon = Icons.Default.Settings,

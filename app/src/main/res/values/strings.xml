@@ -6,6 +6,8 @@
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
     <string name="email">Email</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
     <string name="phone">Phone</string>
     <string name="password">Password</string>
     <string name="hide_password">Hide Password</string>
@@ -16,6 +18,7 @@
     <string name="login">Login</string>
     <string name="edit">Edit Profile</string>
     <string name="universities">Universities</string>
+    <string name="createAPost">Create a Post</string>
     <string name="courses">Courses</string>
     <string name="or">or</string>
     <string name="go_to_login">Already have an account? Login</string>
