@@ -13,7 +13,7 @@ class LoginViewModel : ViewModel() {
     private val TAG = LoginViewModel::class.simpleName
 
     var loginUIState = mutableStateOf(LoginUIState())
-    var loginFlag = mutableStateOf(false)
+    var loginFlags = mutableStateOf(false)
     var allValidationsPassed = mutableStateOf(false)
     var loginInProgress = mutableStateOf(false)
 

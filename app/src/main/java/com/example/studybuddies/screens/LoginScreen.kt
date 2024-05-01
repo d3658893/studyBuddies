@@ -68,8 +68,7 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
                     },
                     errorStatus = loginViewModel.loginUIState.value.emailError
                 )
-
-                PasswordTextFieldComponent(
+                    PasswordTextFieldComponent(
                     labelValue = stringResource(id = R.string.password),
                     painterResource(id = R.drawable.lock),
                     onTextSelected = {
