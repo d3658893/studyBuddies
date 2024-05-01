@@ -23,6 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.studybuddies.R
+import com.example.studybuddies.navigation.Screen
+import com.example.studybuddies.navigation.StudyBuddiesAppRouter
+import com.example.studybuddies.navigation.SystemBackButtonHandler
 import com.example.studybuddies.ui.theme.Purple40
 import com.example.studybuddies.ui.theme.WhiteColor
 
@@ -69,9 +72,9 @@ fun TermsAndConditionScreen(){
             )
         }
     }
-//    SystemBackButtonHandler {
-//        StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
-//    }
+    SystemBackButtonHandler {
+        StudyBuddiesAppRouter.navigateTo(Screen.HomeScreen)
+    }
 }
 
 @Preview
