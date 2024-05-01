@@ -97,6 +97,8 @@ class PostViewModel : ViewModel() {
         val title_ = title
         val description_ = description
         val bitmap = postUIState.value.bitmap
+        val currentTimeMillis = System.currentTimeMillis()
+        val imageName = "image_$currentTimeMillis.jpg" // Example: "image_1620657292448.jpg"
         val userName = postUIState.value.Author
         var isImageUploaded = false
         var isImageFetched = false
@@ -104,7 +106,7 @@ class PostViewModel : ViewModel() {
         Log.d("POST Values", "$title $description $bitmap $userName")
 
         val storageRef = Firebase.storage.reference
-        val imageRef = storageRef.child("postImages/${bitmap}")
+        val imageRef = storageRef.child("postImages/${imageName}")
 
         val baos = ByteArrayOutputStream()
         bitmap?.compress(Bitmap.CompressFormat.JPEG,100,baos)
@@ -127,14 +129,14 @@ class PostViewModel : ViewModel() {
 
                     if (imageItems.isNotEmpty()) {
                         // Sort items based on name (assuming name contains creation time)
-                        val latestImageItem = imageItems.maxByOrNull { it.name }
+                        val latestImageItem = imageItems.maxByOrNull { getImageTimestamp(it.name) }
 
                         // Get the name of the latest image
                         latestImageName.value = latestImageItem?.name ?: ""
 
                         // Use the latest image name as needed
                         Log.d("LatestImageName: ", latestImageName.value)
-                        savePost(title_, description_, latestImageName.value, userName)
+                        savePost(title_, description_, latestImageName.value, postUIState.value.Author)
 
                         } else {
                             Log.d("LatestImageName", "No images found in the folder")
@@ -144,6 +146,17 @@ class PostViewModel : ViewModel() {
                             // Handle failure
                             Log.e("LatestImageName", "Failed to list items: $exception")
                         }
+    }
+
+    private fun getImageTimestamp(imageName: String): Long {
+        // Extract the timestamp from the image name and convert it to a Long
+        // Example: "image_2022-05-10_154321.jpg"
+        val timestampString = imageName.substringAfterLast('_').substringBeforeLast('.')
+        return try {
+            timestampString.toLong()
+        } catch (e: NumberFormatException) {
+            0L // Return 0 if parsing fails
+        }
     }
 
     private fun savePost(title_:String, description_:String, latestImageName:String, userName:String){

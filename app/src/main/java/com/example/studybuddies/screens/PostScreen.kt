@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -35,6 +37,7 @@ import com.example.studybuddies.navigation.SystemBackButtonHandler
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun PostScreen(postViewModel: PostViewModel = viewModel()) {
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -50,13 +53,14 @@ fun PostScreen(postViewModel: PostViewModel = viewModel()) {
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize().verticalScroll(scrollState)
             ) {
 //                UploadImageComponent(painterResource(id=R.mipmap.login_image_foreground))
 
                 HeadingTextComponent(value = stringResource(id = R.string.createAPost))
+                Spacer(modifier = Modifier.height(5.dp))
 
-                NormalTextComponent(value = stringResource(R.string.createAPost))
+                NormalTextComponent(value = stringResource(R.string.postContent))
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -79,7 +83,7 @@ fun PostScreen(postViewModel: PostViewModel = viewModel()) {
                     errorStatus = postViewModel.postUIState.value.descriptionError
                 )
 
-                Spacer(modifier = Modifier.height(360.dp))
+                Spacer(modifier = Modifier.height(330.dp))
                 ButtonComponent(
                     value = stringResource(id = R.string.save),
                     onButtonClicked = {

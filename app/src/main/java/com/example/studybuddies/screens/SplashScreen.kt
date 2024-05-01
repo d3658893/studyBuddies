@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.studybuddies.R
 import com.example.studybuddies.navigation.Screen
 import com.example.studybuddies.navigation.StudyBuddiesAppRouter
+import com.example.studybuddies.ui.theme.Purple40
 import kotlinx.coroutines.delay
 
 @Composable
@@ -46,6 +47,7 @@ fun SplashScreen() {
         imagePainter = painterResource(id = R.mipmap.login_image_foreground),
         scaleAnimation = scaleAnimation
     )
+
 }
 
 @Composable
@@ -104,14 +106,14 @@ fun DesignSplashScreen(
                 painter = imagePainter,
                 contentDescription = " Splash Screen",
                 modifier = modifier
-                    .size(400.dp)
+                    .size(700.dp)
                     .scale(scale = scaleAnimation.value),
             )
 
             Text(
-                text = "Study Buddies App",
-                color = Color.White,
-                fontSize = 40.sp,
+                text = "Study Buddies",
+                color = Purple40,
+                fontSize = 70.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontFamily = FontFamily.Serif,
                 textAlign = TextAlign.Center,

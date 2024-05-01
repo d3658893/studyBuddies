@@ -1,5 +1,6 @@
 package com.example.studybuddies.components
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -726,6 +727,7 @@ fun ProfileImage():Boolean {
 
     val cameraPermission = android.Manifest.permission.CAMERA
     var isCameraPermissionGranted by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
 
     val launcher = rememberLauncherForActivityResult(
@@ -738,6 +740,17 @@ fun ProfileImage():Boolean {
     ) {
         if (it != null) {
             bitmap.value = it
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        if (it) {
+            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+            launcher.launch()
+        } else {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -755,8 +768,8 @@ fun ProfileImage():Boolean {
                 ImageDecoder.decodeBitmap(it1)
             }!!
         }
+        showDialog = false
     }
-    var showDialog by remember { mutableStateOf(false) }
     Box(){
         Column(horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.SpaceEvenly,
@@ -889,7 +902,16 @@ fun ProfileImage():Boolean {
                         modifier = Modifier
                             .size(50.dp)
                             .clickable {
-                                launcher.launch()
+                                val permissionCheckResult =
+                                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                                    launcher.launch()
+                                    showDialog = false
+                                } else {
+                                    // Request a permission
+                                    permissionLauncher.launch(Manifest.permission.CAMERA)
+
+                                }
                                 showDialog = false
                             }
                     )
@@ -945,6 +967,7 @@ fun ProfileImage():Boolean {
     }
     return isUploadingOnLoad
 }
+
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
@@ -960,6 +983,17 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
     ) {
         if (it != null) {
             bitmap.value = it
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        if (it) {
+            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+            launcher.launch()
+        } else {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -985,7 +1019,7 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp)
+                .padding(top = 40.dp)
                 .padding(30.dp)
         ){
             Image(
@@ -994,7 +1028,7 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
 //                    .clip(CircleShape)
-                    .size(300.dp)
+                    .size(200.dp)
                     .background(Purple40)
                     .border(
                         width = 1.dp,
@@ -1011,8 +1045,8 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
             verticalArrangement = Arrangement.Bottom,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 200.dp)
-                .padding(30.dp)
+                .padding(top = 100.dp)
+                .padding(50.dp)
         ) {
             Image(
                 painter = painterResource(id = android.R.drawable.ic_menu_add),
@@ -1027,41 +1061,6 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
         }
         Spacer(modifier = Modifier.height(20.dp))
     }
-//    Column(
-//        horizontalAlignment = Alignment.Start,
-//        verticalArrangement = Arrangement.SpaceEvenly,
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(top = 155.dp)
-//            .padding(20.dp)
-//    ){
-//        Button(
-//            onClick = {
-//            isUploading.value = true
-//            bitmap.value.let { bitmap ->
-//                uploadImageToFirebase(bitmap, context as ComponentActivity){success ->
-//                    isUploading.value = false
-//                    if(success){
-//                        Toast.makeText(context,"Uploaded Successfully",Toast.LENGTH_SHORT).show()
-//                    }
-//                    else{
-//                        Toast.makeText(context,"Failed to Upload",Toast.LENGTH_SHORT).show()
-//                    }
-//                }
-//            }
-//        },
-//            colors = ButtonDefaults.buttonColors(
-//                Purple40
-//            )
-//        ){
-//            Text(
-//                text="Upload",
-//                fontWeight = FontWeight.Bold,
-//                color = WhiteColor,
-//
-//            )
-//        }
-//    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
@@ -1077,7 +1076,7 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
                     .width(300.dp)
                     .height(100.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Secondary)
+                    .background(Purple40)
             ){
                 Column(modifier = Modifier.padding(start = 60.dp)){
                     Image(
@@ -1086,7 +1085,16 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
                         modifier = Modifier
                             .size(50.dp)
                             .clickable {
-                                launcher.launch()
+                                val permissionCheckResult =
+                                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                                    launcher.launch()
+                                    showDialog = false
+                                } else {
+                                    // Request a permission
+                                    permissionLauncher.launch(Manifest.permission.CAMERA)
+
+                                }
                                 showDialog = false
                             }
                     )
@@ -1105,6 +1113,15 @@ fun postImage(onImageChanged: (Bitmap) -> Unit):Boolean {
                             .clickable {
                                 launchImage.launch("image/*")
                                 showDialog = false
+//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                                    if (checkSelfPermission(context,Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+//                                        val permissions =
+//                                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                                        requestPermissions(Activity(),permissions,0)
+//                                    } else {
+//
+//                                    }
+//                                }
                             }
                     )
                     Text(
@@ -1152,93 +1169,6 @@ private fun getUserData() {
         }
     }
 }
-//@Composable
-//fun PostCards(title: String,description:String,imageURI: String) {
-////    getUserData()
-//    val img: Bitmap = BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_camera)
-//    val bitmap = remember { mutableStateOf(img) }
-//    var isUploadingOnLoad by remember { mutableStateOf(false) }
-//
-//    LaunchedEffect(imageURI) {
-//        val imageName = FirebaseStorage.getInstance().reference.child("postImages/${imageURI}/")
-//        imageName.getBytes(Long.MAX_VALUE)
-//            .addOnSuccessListener { bytes ->
-//                Log.d("ImageDownload", "Image bytes received: ${bytes.size}")
-//                // Convert the byte array to a bitmap
-//                val downloadedBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-//                if (downloadedBitmap != null) {
-//                    // Update the state with the downloaded bitmap
-//                    bitmap.value = downloadedBitmap
-//                    Log.d("bitmap value", "${bitmap.value}")
-//                    isUploadingOnLoad = true
-//                } else {
-//                    Log.e("ImageDownload", "Failed to decode byte array into bitmap")
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.e("ImageDownload", "Image download failed", exception)
-//                // Handle failure
-//            }
-////            }
-//    }
-//    if(isUploadingOnLoad){
-//    Box(
-//        modifier = Modifier.fillMaxSize(),
-//        contentAlignment = Alignment.TopStart
-//    ) {
-//
-//        Card(
-//            modifier = Modifier
-//                .width(350.dp)
-//                .height(250.dp),
-//            // shape = CutCornerShape(20.dp)
-//            elevation = CardDefaults.cardElevation(10.dp),
-//            //border = BorderStroke(3.dp,Color.Gray)
-//            colors = CardDefaults.cardColors(
-//                containerColor = Color.White
-//            )
-//        ) {
-//            Column(modifier = Modifier.fillMaxSize()) {
-//                Image(
-//                    bitmap.value.asImageBitmap(),
-//                    modifier= Modifier.height(10.dp),
-////                    painter = rememberAsyncImagePainter(model = bitmap),
-////                    painter = painterResource(id = R.drawable.persepolis),
-//                    contentDescription = "null"
-//                )
-////                Image(
-////                    painterResource(id = R.drawable),
-////                    painter = painterResource(id = android.R.drawable.ic_menu_camera),
-////                    contentDescription = null,
-////                    modifier = Modifier
-////                        .clip(CircleShape)
-////                        .background(Color.Black)
-////                        .size(30.dp)
-//////                    .padding(50.dp)
-////                        .clickable { showDialog = true }
-////                )
-//                Text(
-//                    text = title,
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 18.sp,
-//                    modifier = Modifier.padding(10.dp)
-//                )
-//                Text(
-//                    text = description,
-//                    fontSize = 13.sp,
-//                    modifier = Modifier.padding(6.dp),
-//                    maxLines = 3,
-//                    overflow = TextOverflow.Ellipsis,
-//                    color = Color.Gray
-//                )
-//            }
-//
-//        }
-//    }
-//
-//}
-//    isUploadingOnLoad=false
-//}
 @Composable
 fun PostCards(title: String, description: String,author: String, imageURI: String) {
     val img: Bitmap = BitmapFactory.decodeResource(

@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -93,8 +94,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                     .fillMaxSize()
                     .background(Primary)
                     .padding(paddingValues)
-
             ) {
+
                 @Composable
                 fun displayPosts(scrollState:ScrollState){
                     // Display PostCards
@@ -110,12 +111,10 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
 //                        ) {
                             Column(modifier = Modifier.height(250.dp).width(320.dp).padding(20.dp)
                                 .verticalScroll(scrollState),
-//                                verticalArrangement = Arrangement.Center
+                                verticalArrangement = Arrangement.Center
                             ) {
                                 for (postDataItem in postDataItemsList) {
-//                        LaunchedEffect("android.graphics.Bitmap@5fbb1d7") {
-//                            bitmap.value = GetImageBitmap("android.graphics.Bitmap@5fbb1d7")
-//                        }
+
 
 //                        bitmap.value?.let { loadedBitmap ->
                                     PostCards(

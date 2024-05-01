@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
     val profileUpdateInProgress = profileViewModel.profileUpdateInProgress
     var isComponentVisible by remember { mutableStateOf(false) }
     var isEnabled by remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
 
     if(!profileViewModel.setModelInProgress && ProfileImage()) {
         Box(
@@ -67,7 +70,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
 
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize().verticalScroll(scrollState)
                 ) {
                     HeadingTextComponent(value = stringResource(id = string.user_profile))
 //                NormalTextComponent(value = stringResource(id = string.study_buddies))
@@ -79,7 +82,7 @@ fun UserProfileScreen(profileViewModel: UserProfileViewModel = viewModel()) {
                             isComponentVisible = !isComponentVisible
                         }
                     )
-                    Spacer(modifier = Modifier.height(30.dp))
+                    Spacer(modifier = Modifier.height(60.dp))
                     // Personal Information Section
                     // first name Field
                     MyTextFieldComponent(

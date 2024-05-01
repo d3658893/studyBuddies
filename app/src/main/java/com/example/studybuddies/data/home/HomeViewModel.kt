@@ -5,7 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Output
+import androidx.compose.material.icons.filled.Policy
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.studybuddies.data.NavigationItem
@@ -37,9 +38,15 @@ class HomeViewModel : ViewModel() {
             itemId = Screen.PostScreen
     ),
         NavigationItem(
-            title = "Settings",
-            icon = Icons.Default.Settings,
-            description = "Settings Screen",
+            title = "Terms & Policy",
+            icon = Icons.Default.Policy,
+            description = "Terms & Policy Screen",
+            itemId = Screen.TermsAndConditionsScreen
+    ),
+        NavigationItem(
+            title = "SignOut",
+            icon = Icons.Default.Output,
+            description = "SignOut",
             itemId = Screen.SignUpScreen
     ),
     )
@@ -60,7 +67,6 @@ class HomeViewModel : ViewModel() {
                 Log.d(TAG, "Inside sign out is not complete")
             }
         }
-
         firebaseAuth.addAuthStateListener(authStateListener)
 
     }

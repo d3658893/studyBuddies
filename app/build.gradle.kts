@@ -60,9 +60,6 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-//    implementation("com.google.accompanist:accompanist-gifanimation:0.24.0")
-
-//    implementation(libs.androidx.material3)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.5")
     implementation("io.coil-kt:coil-compose:2.3.0")

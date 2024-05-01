@@ -26,7 +26,6 @@ import com.example.studybuddies.components.HeadingTextComponent
 import com.example.studybuddies.components.MyTextFieldComponent
 import com.example.studybuddies.components.NormalTextComponent
 import com.example.studybuddies.components.PasswordTextFieldComponent
-import com.example.studybuddies.components.UnderLinedTextComponent
 import com.example.studybuddies.components.UploadImageComponent
 import com.example.studybuddies.data.login.LoginUIEvent
 import com.example.studybuddies.data.login.LoginViewModel
@@ -79,8 +78,8 @@ fun LoginScreen(loginViewModel: LoginViewModel = viewModel()) {
                     errorStatus = loginViewModel.loginUIState.value.passwordError
                 )
 
-                Spacer(modifier = Modifier.height(40.dp))
-                UnderLinedTextComponent(value = stringResource(id = R.string.forgot_password))
+//                Spacer(modifier = Modifier.height(40.dp))
+//                UnderLinedTextComponent(value = stringResource(id = R.string.forgot_password))
 
                 Spacer(modifier = Modifier.height(40.dp))
 
